@@ -7,8 +7,6 @@ exports.defaults = function() {
       options: {
         debug: false,
         trace: false,
-        extendTags: null,
-        functions: [],
         cache: false
       }
     }
@@ -17,9 +15,14 @@ exports.defaults = function() {
 
 exports.placeholder = function() {
   return "\t\n\n" +
-         "  twig:               # config settings for the Twig compiler module\n" +
-         "    lib: undefined    # use this property to provide a specific version of Twig\n" +
-         "    extensions: [\"twig\", \"twg\", \"hjs\"]  # default extensions for Twig files\n";
+         "  twig:                 # config settings for the Twig compiler module\n" +
+         "    lib: undefined      # use this property to provide a specific version of Twig\n" +
+         "    extensions: [\"twig\", \"twg\", \"hjs\"]  # default extensions for Twig files\n" +
+         "    options : {         # options for the underlying twig compiler\n" +
+         "      debug: false,\n" +
+         "      trace: false\n" +
+         "    }\n";
+
 };
 
 exports.validate = function( config, validators ) {
@@ -36,26 +39,6 @@ exports.validate = function( config, validators ) {
         errors.push( "twig.extensions cannot be an empty array");
       }
     }
-
-    // extend tag types
-    // https://github.com/justjohn/twig.js/wiki/Extending-twig.js-With-Custom-Tags
-    if( config.twig.options && config.twig.options.extendTags ) {
-      config.twig.lib.extend(config.twig.options.extendTags);
-    }
-
-    // extend functions
-    // extends Twig with given function objects.
-    // Should have
-    // {
-    //   name: "nameOfFunction",
-    //   func: function (args) { return "the function"; }
-    // }
-    if ( config.twig.options && config.twig.options.functions ) {
-      config.twig.options.functions.forEach( function ( func ) {
-        config.twig.lib.extendFunction( func.name, func.func );
-      });
-    }
-
   }
 
   return errors;
