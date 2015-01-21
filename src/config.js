@@ -3,7 +3,14 @@
 exports.defaults = function() {
   return {
     twig: {
-      extensions: [ "twig", "twg" ]
+      extensions: [ "twig", "twg" ],
+      options: {
+        debug: false,
+        trace: false,
+        extendTags: null,
+        functions: [],
+        cache: false
+      }
     }
   };
 };
@@ -29,6 +36,26 @@ exports.validate = function( config, validators ) {
         errors.push( "twig.extensions cannot be an empty array");
       }
     }
+
+    // extend tag types
+    // https://github.com/justjohn/twig.js/wiki/Extending-twig.js-With-Custom-Tags
+    if( config.twig.options && config.twig.options.extendTags ) {
+      config.twig.lib.extend(config.twig.options.extendTags);
+    }
+
+    // extend functions
+    // extends Twig with given function objects.
+    // Should have
+    // {
+    //   name: "nameOfFunction",
+    //   func: function (args) { return "the function"; }
+    // }
+    if ( config.twig.options && config.twig.options.functions ) {
+      config.twig.options.functions.forEach( function ( func ) {
+        config.twig.lib.extendFunction( func.name, func.func );
+      });
+    }
+
   }
 
   return errors;

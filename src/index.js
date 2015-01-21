@@ -1,40 +1,56 @@
 "use strict";
 
 var path = require( "path" )
+  , fs = require( "fs" )
+  , clone = require( "clone" )
   , config = require( "./config" )
+  , renderTwig
   , getExtensions = function ( mimosaConfig ) {
     return mimosaConfig.twig.extensions;
   };
 
 var prefix = function ( mimosaConfig, libraryPath ) {
+  var str = "var templates = {};\n";
+  // IMPORTANT: need to use Twig global, so do not
+  // overwrite that scope
+  // https://github.com/justjohn/twig.js/issues/131
   if ( mimosaConfig.template.wrapType === "amd" ) {
-    return "define(['" + libraryPath + "'], function (Twig){ var templates = {};\n";
+    str = "define(['" + libraryPath + "'], function (){ var templates = {};\n";
   } else {
     if ( mimosaConfig.template.wrapType === "common" ) {
-      return "var Twig = require('" + mimosaConfig.template.commonLibPath + "');\nvar templates = {};\n";
+      str = "require('" + mimosaConfig.template.commonLibPath + "');\nvar templates = {};\n";
     }
   }
 
-  return "var templates = {};\n";
+  return str;
 };
 
 var suffix = function ( mimosaConfig ) {
+  if ( !renderTwig ) {
+    renderTwig = fs.readFileSync(path.join(__dirname, "client", "render.js"));
+  }
+
+  var str = renderTwig + "\n";
+
   if ( mimosaConfig.template.wrapType === "amd" ) {
-    return "return templates; });";
+    str += "return templates; });";
   } else {
     if ( mimosaConfig.template.wrapType === "common" ) {
-      return "\nmodule.exports = templates;";
+      str += "\nmodule.exports = templates;";
     }
   }
 
-  return "";
+  return str;
 };
 
 var compile = function ( mimosaConfig, file, cb ) {
   var error, output;
 
   try {
-    output = "templates['" + file.templateName + "']";
+    var opts = clone( mimosaConfig.twig.options );
+    opts.data = file.inputFileText;
+    var template = mimosaConfig.twig.lib.twig( opts );
+    output = JSON.stringify(template);
   } catch ( err ) {
     error = err;
   }

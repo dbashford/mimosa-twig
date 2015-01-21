@@ -1,6 +1,6 @@
 {
   "name": "mimosa-twig",
-  "version": "2.0.0",
+  "version": "0.1.0",
   "homepage": "https://github.com/dbashford/mimosa-twig",
   "author": "David Bashford",
   "description": "A Twig client template compiler for Mimosa",
@@ -21,7 +21,8 @@
     "twig"
   ],
   "dependencies": {
-    "twig": "0.7.2"
+    "twig": "0.7.2",
+    "clone": "0.2.0"
   },
   "license": "MIT",
   "main": "./src",
